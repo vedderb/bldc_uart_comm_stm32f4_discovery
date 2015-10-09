@@ -10,5 +10,6 @@ make upload
 
 Connect the USB port of the discovery board to a computer and run a serial terminal such as screen. Type help to list available commands. Only a few commands are implemented, but more can be added easily in main.c.  
   
-I will write a post with a detailed description about this soon.
+I have written a tutorial on how to use and port this code to other platforms here:  
+http://vedder.se/2015/10/communicating-with-the-vesc-using-uart/
 
