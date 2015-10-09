@@ -120,7 +120,8 @@ CSRC = $(STARTUPSRC) \
        buffer.c \
        packet.c \
        crc.c \
-       comm_uart.c
+       comm_uart.c \
+       bldc_interface_uart.c
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.

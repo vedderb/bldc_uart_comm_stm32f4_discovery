@@ -25,15 +25,11 @@
 #include "comm_uart.h"
 #include "ch.h"
 #include "hal.h"
-#include "packet.h"
-#include "bldc_interface.h"
+#include "bldc_interface_uart.h"
 
 #include <string.h>
 
 // Settings
-#define PACKET_HANDLER			0
-#define SERIAL_RX_BUFFER_SIZE	1024
-
 #define UART_BAUDRATE			115200
 #define UART_DEV				UARTD3
 #define UART_GPIO_AF			7
@@ -41,13 +37,14 @@
 #define UART_TX_PIN				10
 #define UART_RX_PORT			GPIOB
 #define UART_RX_PIN				11
+#define SERIAL_RX_BUFFER_SIZE	1024
 
 // Private functions
-static void process_packet(unsigned char *data, unsigned int len);
-static void send_packet_bldc_interface(unsigned char *data, unsigned int len);
 static void send_packet(unsigned char *data, unsigned int len);
 
 // Threads
+static THD_FUNCTION(timer_thread, arg);
+static THD_WORKING_AREA(timer_thread_wa, 512);
 static THD_FUNCTION(packet_process_thread, arg);
 static THD_WORKING_AREA(packet_process_thread_wa, 4096);
 static thread_t *process_tp;
@@ -144,27 +141,13 @@ static THD_FUNCTION(packet_process_thread, arg) {
 		 */
 
 		while (serial_rx_read_pos != serial_rx_write_pos) {
-			packet_process_byte(serial_rx_buffer[serial_rx_read_pos++], PACKET_HANDLER);
+			bldc_interface_uart_process_byte(serial_rx_buffer[serial_rx_read_pos++]);
 
 			if (serial_rx_read_pos == SERIAL_RX_BUFFER_SIZE) {
 				serial_rx_read_pos = 0;
 			}
 		}
 	}
-}
-
-/**
- * Callback for the packet handled for when a whole packet is received,
- * assembled and checked.
- *
- * @param data
- * Data array pointer
- * @param len
- * Data array length
- */
-static void process_packet(unsigned char *data, unsigned int len) {
-	// Let bldc_interface process the packet.
-	bldc_interface_process_packet(data, len);
 }
 
 /**
@@ -195,22 +178,21 @@ static void send_packet(unsigned char *data, unsigned int len) {
 }
 
 /**
- * Callback that bldc_interface uses to send packets.
- *
- * @param data
- * Data array pointer
- * @param len
- * Data array length
+ * This thread is only for calling the timer function once
+ * per millisecond. Can also be implementer using interrupts
+ * if no RTOS is available.
  */
-static void send_packet_bldc_interface(unsigned char *data, unsigned int len) {
-	// Pass the packet to the packet handler to add checksum, length, start and stop bytes.
-	packet_send_packet(data, len, PACKET_HANDLER);
+static THD_FUNCTION(timer_thread, arg) {
+	(void)arg;
+	chRegSetThreadName("packet timer");
+
+	for(;;) {
+		bldc_interface_uart_run_timer();
+		chThdSleepMilliseconds(1);
+	}
 }
 
 void comm_uart_init(void) {
-	// Initialize packet handler
-	packet_init(send_packet, process_packet, PACKET_HANDLER);
-
 	// Initialize UART
 	uartStart(&UART_DEV, &uart_cfg);
 	palSetPadMode(UART_TX_PORT, UART_TX_PIN, PAL_MODE_ALTERNATE(UART_GPIO_AF) |
@@ -221,9 +203,13 @@ void comm_uart_init(void) {
 			PAL_STM32_PUDR_PULLUP);
 
 	// Initialize the bldc interface and provide a send function
-	bldc_interface_init(send_packet_bldc_interface);
+	bldc_interface_uart_init(send_packet);
 
 	// Start processing thread
 	chThdCreateStatic(packet_process_thread_wa, sizeof(packet_process_thread_wa),
 			NORMALPRIO, packet_process_thread, NULL);
+
+	// Start timer thread
+	chThdCreateStatic(timer_thread_wa, sizeof(timer_thread_wa),
+			NORMALPRIO, timer_thread, NULL);
 }
