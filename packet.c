@@ -80,7 +80,8 @@ void packet_send_packet(unsigned char *data, unsigned int len, int handler_num) 
  * Call this function every millisecond.
  */
 void packet_timerfunc(void) {
-	for (int i = 0;i < PACKET_HANDLERS;i++) {
+	int i = 0;
+	for (i = 0;i < PACKET_HANDLERS;i++) {
 		if (handler_states[i].rx_timeout) {
 			handler_states[i].rx_timeout--;
 		} else {

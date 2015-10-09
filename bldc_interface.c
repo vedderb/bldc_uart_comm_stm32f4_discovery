@@ -109,6 +109,7 @@ void bldc_interface_process_packet(unsigned char *data, unsigned int len) {
 	}
 
 	int32_t ind = 0;
+	int i = 0;
 	unsigned char id = data[0];
 	data++;
 	len--;
@@ -304,7 +305,7 @@ void bldc_interface_process_packet(unsigned char *data, unsigned int len) {
 		ind = 0;
 		detect_cycle_int_limit = buffer_get_float32(data, 1000.0, &ind);
 		detect_coupling_k = buffer_get_float32(data, 1000.0, &ind);
-		for (int i = 0;i < 8;i++) {
+		for (i = 0;i < 8;i++) {
 			detect_hall_table[i] = (const signed char)(data[ind++]);
 		}
 		detect_hall_res = (const signed char)(data[ind++]);
