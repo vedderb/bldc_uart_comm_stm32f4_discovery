@@ -28,7 +28,7 @@
 #include <string.h>
 
 // Private variables
-static unsigned char send_buffer[1024];
+static unsigned char send_buffer[512];
 static int32_t can_fwd_vesc = -1;
 
 // Private variables for received data
