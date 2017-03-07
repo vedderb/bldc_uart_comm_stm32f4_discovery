@@ -827,7 +827,7 @@ void send_packet_no_fwd(unsigned char *data, unsigned int len) {
 
 static void fwd_can_append(uint8_t *data, int32_t *ind) {
 	if (can_fwd_vesc >= 0) {
-		data[*ind++] = COMM_FORWARD_CAN;
-		data[*ind++] = can_fwd_vesc;
+		data[(*ind)++] = COMM_FORWARD_CAN;
+		data[(*ind)++] = can_fwd_vesc;
 	}
 }
