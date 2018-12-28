@@ -1,5 +1,5 @@
 /*
-	Copyright 2016 Benjamin Vedder	benjamin@vedder.se
+	Copyright 2016-2017 Benjamin Vedder	benjamin@vedder.se
 
 	This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,7 +22,6 @@
 
 // interface functions
 void bldc_interface_init(void(*func)(unsigned char *data, unsigned int len));
-void bldc_interface_set_forward_can(int32_t vesc_id);
 void bldc_interface_set_forward_func(void(*func)(unsigned char *data, unsigned int len));
 void bldc_interface_send_packet(unsigned char *data, unsigned int len);
 void bldc_interface_process_packet(unsigned char *data, unsigned int len);
@@ -42,6 +41,9 @@ void bldc_interface_set_rx_dec_chuk_func(void(*func)(float val));
 void bldc_interface_set_rx_mcconf_received_func(void(*func)(void));
 void bldc_interface_set_rx_appconf_received_func(void(*func)(void));
 
+void bldc_interface_set_sim_control_function(void(*func)(motor_control_mode mode, float value));
+void bldc_interface_set_sim_values_func(void(*func)(void));
+
 // Setters
 void bldc_interface_terminal_cmd(char* cmd);
 void bldc_interface_set_duty_cycle(float dutyCycle);
@@ -49,6 +51,7 @@ void bldc_interface_set_current(float current);
 void bldc_interface_set_current_brake(float current);
 void bldc_interface_set_rpm(int rpm);
 void bldc_interface_set_pos(float pos);
+void bldc_interface_set_handbrake(float current);
 void bldc_interface_set_servo_pos(float pos);
 void bldc_interface_set_mcconf(const mc_configuration *mcconf);
 void bldc_interface_set_appconf(const app_configuration *appconf);
@@ -66,6 +69,7 @@ void bldc_interface_get_decoded_chuk(void);
 void bldc_interface_detect_motor_param(float current, float min_rpm, float low_duty);
 void bldc_interface_reboot(void);
 void bldc_interface_send_alive(void);
+void send_values_to_receiver(mc_values *values);
 
 // Helpers
 const char* bldc_interface_fault_to_string(mc_fault_code fault);

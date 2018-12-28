@@ -45,7 +45,7 @@ static const ShellConfig shell_cfg1 = {
 void bldc_val_received(mc_values *val) {
 	main_printf("\r\n");
 	main_printf("Input voltage: %.2f V\r\n", val->v_in);
-	main_printf("Temp:          %.2f degC\r\n", val->temp_pcb);
+	main_printf("Temp:          %.2f degC\r\n", val->temp_mos);
 	main_printf("Current motor: %.2f A\r\n", val->current_motor);
 	main_printf("Current in:    %.2f A\r\n", val->current_in);
 	main_printf("RPM:           %.1f RPM\r\n", val->rpm);
